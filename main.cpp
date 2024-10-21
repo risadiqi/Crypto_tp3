@@ -34,7 +34,8 @@ void Expo_By_Squaring(mpz_t result, mpz_t g, mpz_t k, mpz_t p){
         while(mpz_cmp_ui(k, 1) > 0){
 
             if(mpz_even_p(k) != 0){
-                mpz_powm_ui(g, g, (unsigned long int)2, p);
+                mpz_mul(g, g, g);
+                mpz_mod(g, g, p);
                 mpz_divexact_ui(k, k, 2);
             }
 
@@ -49,6 +50,226 @@ void Expo_By_Squaring(mpz_t result, mpz_t g, mpz_t k, mpz_t p){
         mpz_mod(result, result, p);
     }
 
+}
+/*
+bool rabin_miller_Isprime(mpz_t n){
+    if (mpz_even_p(n)) 
+        return false; 
+
+    mpz_t n_minus_1, t;
+    mpz_init(n_minus_1);
+    mpz_sub_ui(n_minus_1, n, 1);
+
+    mpz_init_set(t, n_minus_1);
+
+    size_t s = 0;
+    while (mpz_even_p(t)) { 
+        mpz_divexact_ui(t, t, 2U);
+        s++;
+    }
+
+    gmp_randstate_t rstate;
+    gmp_randinit_default(rstate);
+    gmp_randseed_ui(rstate, time(NULL));
+
+    mpz_t a, x;
+    mpz_init(a);
+    mpz_init(x);
+
+    do {
+        mpz_urandomm(a, rstate, n_minus_1); 
+    } while (mpz_cmp_ui(a, 2) <= 0 || mpz_cmp(a, n_minus_1) >= 0); 
+
+    Expo_By_Squaring(x, a, t, n);
+
+    if (mpz_cmp_ui(x, 1) == 0 || mpz_cmp(x, n_minus_1) == 0) {
+        return true;
+    }
+
+    while (mpz_cmp(t, n_minus_1) != 0)
+    {
+        mpz_mul(x, x, x); 
+        mpz_mod(x, x, n); 
+        mpz_mul_ui(d, d, 2U);
+ 
+        if (mpz_cmp_ui(x, 1) == 0)      
+            return false;
+        if (mpz_cmp(x, n_minus_1) == 0)    
+            return true;
+    }
+ 
+    // Return composite
+    return false;
+}
+
+bool rabin_miller_test(mpz_t n, int k) {
+
+    if (mpz_cmp_ui(n, 1) <= 0 || n == 4)  return false;
+    if (n <= 3) return true;
+
+    if (mpz_even_p(n)) 
+        return false; 
+
+    mpz_t n_minus_1, t;
+    mpz_init(n_minus_1);
+    mpz_sub_ui(n_minus_1, n, 1);
+
+    mpz_init_set(t, n_minus_1);
+
+    size_t s = 0;
+    while (mpz_even_p(t)) { 
+        mpz_divexact_ui(t, t, 2U);
+        s++;
+    }
+
+    gmp_randstate_t rstate;
+    gmp_randinit_default(rstate);
+    gmp_randseed_ui(rstate, time(NULL));
+
+    mpz_t a, x;
+    mpz_init(a);
+    mpz_init(x);
+
+    for (int i = 0; i < k; i++) {
+
+        do {
+            mpz_urandomm(a, rstate, n_minus_1); 
+        } while (mpz_cmp_ui(a, 2) <= 0 || mpz_cmp(a, n_minus_1) >= 0); 
+
+        Expo_By_Squaring(x, a, t, n);
+
+        if (mpz_cmp_ui(x, 1) == 0 || mpz_cmp(x, n_minus_1) == 0) {
+            continue;
+        }
+
+        bool composite = true;
+        for (size_t r = 0; r < s - 1; r++) {
+            mpz_mul(x, x, x); 
+            mpz_mod(x, x, n); 
+
+            if (mpz_cmp_ui(x, 1) == 0) {
+                mpz_clear(a);
+                mpz_clear(x);
+                mpz_clear(n_minus_1);
+                mpz_clear(t);
+                gmp_randclear(rstate);
+                return false; 
+            }
+
+            if (mpz_cmp(x, n_minus_1) == 0) {
+                break; 
+            }
+        }
+        
+        if (composite) {
+            mpz_clear(a);
+            mpz_clear(x);
+            mpz_clear(n_minus_1);
+            mpz_clear(t);
+            gmp_randclear(rstate);
+            return false; 
+        }
+    }
+
+    mpz_clear(a);
+    mpz_clear(x);
+    mpz_clear(n_minus_1);
+    mpz_clear(t);
+    gmp_randclear(rstate);
+
+    return true;       
+
+}*/
+
+bool rabin_miller(mpz_t n, int k) {
+
+    if (mpz_even_p(n)) 
+        return false; 
+
+    mpz_t n_minus_1, t;
+    mpz_init(n_minus_1);
+    mpz_sub_ui(n_minus_1, n, 1);
+
+    mpz_init_set(t, n_minus_1);
+
+    int s = 0;
+    while (mpz_even_p(t)) { 
+        mpz_fdiv_q_ui(t, t, 2);
+        s++;
+    }
+
+    gmp_randstate_t rstate;
+    gmp_randinit_default(rstate);
+    
+
+    mpz_t a, x;
+    mpz_init(a);
+    mpz_init(x);
+
+    for (int i = 0; i < k; i++) {
+
+        do {
+            gmp_randseed_ui(rstate, time(NULL));
+            mpz_urandomm(a, rstate, n_minus_1); 
+        } while (mpz_cmp_ui(a, 2) < 0 || mpz_cmp(a, n_minus_1) >= 0); 
+
+        Expo_By_Squaring(x, a, t, n);
+
+        if (mpz_cmp_ui(x, 1) != 0 && mpz_cmp(x, n_minus_1) != 0) {
+            bool composite = true;
+
+            for (int r = 1; r < s; r++) {
+                mpz_mul(x, x, x); 
+                mpz_mod(x, x, n); 
+
+                if (mpz_cmp_ui(x, 1) == 0) {
+                    mpz_clear(a);
+                    mpz_clear(x);
+                    mpz_clear(n_minus_1);
+                    mpz_clear(t);
+                    gmp_randclear(rstate);
+                    return false; 
+                }
+
+                if (mpz_cmp(x, n_minus_1) == 0) {
+                    composite = false;
+                    break; 
+                }
+            }
+            
+            if (composite) {
+                mpz_clear(a);
+                mpz_clear(x);
+                mpz_clear(n_minus_1);
+                mpz_clear(t);
+                gmp_randclear(rstate);
+                return false; 
+            }
+        }
+    }
+
+    mpz_clear(a);
+    mpz_clear(x);
+    mpz_clear(n_minus_1);
+    mpz_clear(t);
+    gmp_randclear(rstate);
+
+    return true;       
+
+}
+
+void gcd_euclidian(mpz_t res, mpz_t a, mpz_t b) {
+
+    if (mpz_cmp_ui(b, 0) == 0)
+        mpz_set(res, a);
+
+    else {
+        mpz_t m;
+        mpz_init(m);
+        mpz_mod(m, a, b);
+        gcd_euclidian(res, b, m);
+    }
+        
 }
 
 /* Main subroutine */
@@ -76,6 +297,7 @@ int main()
     /*
      *  Step 1 : Get two large primes.
      */
+     std::cout << "hi4" << std::endl;
     mpz_t p,q;
     mpz_t randp, randq;
     mpz_init(randp);
@@ -87,11 +309,27 @@ int main()
     gmp_randinit_default(r);
     gmp_randseed_ui(r, time(NULL));
 
-    mpz_urandomb(randp, r, PRIMESIZE);
-    mpz_urandomb(randq, r, PRIMESIZE);
+    mpz_urandomb(p, r, PRIMESIZE);
+    if (mpz_even_p(p)) {
+        mpz_add_ui(p, p, 1);  
+    }
 
+    mpz_urandomb(q, r, PRIMESIZE);
+    if (mpz_even_p(q)) {
+        mpz_add_ui(q, q, 1);  
+    }
+
+/*
     mpz_nextprime(p, randp);
-    mpz_nextprime(q, randq);
+    mpz_nextprime(q, randq);*/ 
+       
+    while (rabin_miller(p, 7) == false){
+        mpz_add_ui(p, p, (unsigned int long)2);
+    }
+
+    while (rabin_miller(q, 7) == false || mpz_cmp(p, q) == 0){
+        mpz_add_ui(q, q, (unsigned int long)2);
+    }    
     
     char p_str[1000];
     char q_str[1000];
@@ -142,7 +380,8 @@ int main()
         gmp_randseed_ui(ra, time(NULL));
 
         mpz_urandomb(e, ra, PRIMESIZE);
-        mpz_gcd(rop, e, x);
+        //mpz_gcd(rop, e, x);
+        gcd_euclidian(rop, e, x);
 
     } while (mpz_cmp_ui(rop, 1) != 0);
 
@@ -172,6 +411,7 @@ int main()
     /* 
      * Step 6: Generate random message M < n 
      */
+
     gmp_randstate_t rs;
     gmp_randinit_default(rs);
     gmp_randseed_ui(rs, time(NULL));
@@ -228,5 +468,7 @@ int main()
     mpz_clear(rop);
     mpz_clear(randp);
     mpz_clear(randq);
+
+    gmp_randclear(r);
 }
 
