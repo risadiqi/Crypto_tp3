@@ -11,7 +11,7 @@ Dans ce TP, nous avons implémenté l'algorithme de chiffrement RSA en utilisant
 
 * Squelette de Code/ : Ce répertoire contient le code source principal :
 
-     + main.cpp : Ce fichier implémente l'algorithme RSA en passant par toutes les étapes de chiffrement et de déchiffrement.
+     + main.cpp : Ce fichier implémente l'algorithme RSA en passant par toutes les étapes, de la génération des clés publics et privés, au chiffrement et au déchiffrement. 
  
      + main_test.cpp : Ce fichier n'a pas été utilisé.
        
